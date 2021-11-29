@@ -1,0 +1,15 @@
+
+auto-save-list/
+eshell/
+elpa/
+elpy/
+el-get/
+transient/
+history
+ac-comphist.dat
+network-security.data
+*.elc
+custom.el
+mysnippets/
+yasnippets/
+.org-id-locations
