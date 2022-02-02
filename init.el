@@ -168,73 +168,6 @@
    (uniquify-min-dir-content   . 1))        ;; display if the same file is not opned.
 )
 
-(leaf vertico
-  :doc "VERTical Interactive COmpletion"
-  :req "emacs-27.1"
-  :tag "emacs>=27.1"
-  :url "https://github.com/minad/vertico"
-  :added "2021-09-15"
-  :emacs>= 27.1
-  :ensure t
-  :custom
-  ((vertico-count . 20))
-)
-
-(leaf consult
-  :doc "Consulting completing-read"
-  :req "emacs-26.1"
-  :tag "emacs>=26.1"
-  :url "https://github.com/minad/consult"
-  :added "2021-09-15"
-  :emacs>= 26.1
-  :ensure t
-  :after t embark
-  :require embark-consult
-)
-
-(leaf marginalia
-  :doc "Enrich existing commands with completion annotations"
-  :req "emacs-26.1"
-  :tag "emacs>=26.1"
-  :url "https://github.com/minad/marginalia"
-  :added "2021-09-15"
-  :emacs>= 26.1
-  :ensure t)
-
-(leaf orderless
-  :doc "Completion style for matching regexps in any order"
-  :req "emacs-26.1"
-  :tag "extensions" "emacs>=26.1"
-  :url "https://github.com/oantolin/orderless"
-  :added "2021-09-15"
-  :emacs>= 26.1
-  :ensure t
-  ;; :config
-  ;; (with-eval-after-load 'orderless
-  ;;   (setq completion-styles '(orderless)))
-  :after t
-  :setq ((completion-styles quote (orderless)))
-)
-
-(leaf enable-vertico-and-marginalia
-  :preface
-  (defun after-init-hook ()
-    (vertico-mode)
-    (marginalia-mode)
-    (savehist-mode))
-  :config
-  (add-hook 'after-init-hook #'after-init-hook)
-)
-
-(leaf embark
-  :doc "Conveniently act on minibuffer completions"
-  :req "emacs-26.1"
-  :tag "convenience" "emacs>=26.1"
-  :url "https://github.com/oantolin/embark"
-  :added "2021-09-15"
-  :emacs>= 26.1
-  :ensure t)
-
 (leaf elscreen
   ;; 仮想Window
   :doc "Emacs window session manager"
@@ -292,6 +225,7 @@
 )
 
 (leaf tramp
+  ;; SSH接続
   :doc "Transparent Remote Access, Multiple Protocol"
   :tag "builtin"
   :added "2021-09-15"
@@ -321,30 +255,64 @@
   (global-set-key [(control ?\:)] 'my-insert-time)
 )
 
-;; (leaf auto-complete
-;;   :doc "Auto Completion for GNU Emacs"
-;;   :req "popup-0.5.0" "cl-lib-0.5"
-;;   :tag "convenience" "completion"
-;;   :url "https://github.com/auto-complete/auto-complete"
-;;   :added "2021-09-15"
-;;   :ensure t
-;;   :require t
-;;   :config
-;;   (global-auto-complete-mode t)
-;; )
+(leaf helm-settings
+  :config
+  (leaf helm
+    :doc "Helm is an Emacs incremental and narrowing framework"
+    :req "emacs-25.1" "async-1.9.4" "popup-0.5.3" "helm-core-3.8.2"
+    :tag "emacs>=25.1"
+    :url "https://github.com/emacs-helm/helm"
+    :added "2022-01-26"
+    :emacs>= 25.1
+    :ensure t
+    :require t
+    :after helm-core)
 
-;; (leaf auto-complete-config
-;;   :require t
-;;   :after auto-complete
-;;   :config
-;;   (add-to-list 'ac-modes 'text-mode)         ;; enable text-mode by auto
-;;   (add-to-list 'ac-modes 'fundamental-mode)  ;; fundamental-mode
-;;   (add-to-list 'ac-modes 'org-mode)
-;;   (ac-set-trigger-key "TAB")
-;;   :custom
-;;   ((ac-use-menu-map . t)                   ;; display candidate on menu by C-n/C-p
-;;    (ac-use-fuzzy . t))                      ;; match vague
-;; )
+  (leaf helm-config
+    :doc "Applications library for `helm.el'"
+    :added "2022-01-26"
+    :require t)
+
+  (leaf helm-gtags
+    :doc "GNU GLOBAL helm interface"
+    :req "emacs-24.4" "helm-2.0"
+    :tag "emacs>=24.4"
+    :url "https://github.com/syohex/emacs-helm-gtags"
+    :added "2021-12-14"
+    :emacs>= 24.4
+    :ensure t
+    :after helm
+    :require t
+    :config
+    (setq helm-gtags-path-style 'root)
+    (setq helm-gtags-auto-update t)
+    (add-hook 'helm-gtags-mode-hook
+              '(lambda ()
+                 (local-set-key (kbd "M-t") 'helm-gtags-find-tag)
+                 (local-set-key (kbd "M-r") 'helm-gtags-find-rtag)
+                 (local-set-key (kbd "M-s") 'helm-gtags-find-symbol)
+                 (local-set-key (kbd "C-t") 'helm-gtags-pop-stack)))
+    (add-hook 'c-mode-hook      'helm-gtags-mode)
+    (add-hook 'c++-mode-hook    'helm-gtags-mode)
+    (add-hook 'csharp-mode-hook 'helm-gtags-mode)
+    (add-hook 'python-mode-hook 'helm-gtags-mode))
+
+  (global-set-key (kbd "M-x")     'helm-M-x)
+  (global-set-key (kbd "C-x C-f") 'helm-find-files)
+  (global-set-key (kbd "C-c i")   'helm-imenu)
+  (global-set-key (kbd "C-x b")   'helm-buffers-list)
+
+  (helm-mode 1)
+
+  (define-key helm-map            (kbd "C-h")   'delete-backward-char)            ;; C-h to delete
+  (define-key helm-map            (kbd "<tab>") 'helm-execute-persistent-action)
+ ;(define-key helm-M-x-map        (kbd "<tab>") 'helm-execute-persistent-action)
+  (define-key helm-read-file-map  (kbd "<tab>") 'helm-execute-persistent-action)
+  (define-key helm-find-files-map (kbd "<tab>") 'helm-execute-persistent-action)  ;;
+  (define-key helm-find-files-map (kbd "C-h")   'delete-backward-char)            ;; C-h to delete
+
+  (setq ad-redefinition-action 'accept)
+)
 
 (leaf company
   :ensure t
@@ -518,6 +486,29 @@
    ;;  '(org-level-4 ((t (:foreground "#ECF0F1")))) ; CLOUD
    ;;  ;; org-level-3,4,5..と指定可能
    ;;  )
+   (leaf org-superstar
+     :doc "Prettify headings and plain lists in Org mode"
+     :req "org-9.1.9" "emacs-26.1"
+     :tag "outlines" "faces" "emacs>=26.1"
+     :url "https://github.com/integral-dw/org-superstar-mode"
+     :added "2021-12-29"
+     :emacs>= 26.1
+     :ensure t
+     :after org
+     :require t
+     :hook
+     (org-mode-hook . (lambda () (org-superstar-mode 1)))
+     :config
+     ;;(set-face-attribute 'org-superstar-header-bullet nil :inherit 'fixed-pitched :height 180)
+     (setq org-superstar-headline-bullets-list '("⌾" "■" "⚬" "▷"))
+     ;; (setq org-superstar-item-bullet-alist
+     ;;       '((?* . ?•)
+     ;;         (?* . ?➤)
+     ;;         (?- . ?•)))
+     (setq org-superstar-todo-bullet-alist
+           '(("TODO" . ?☐) ("WORK" . ?✰) ("CANCELED" . ?✘) ("WAIT" . ?☕) ("DONE" . ?✔)))
+     (setq org-superstar-special-todo-items t)
+   )
 )
 
 (leaf markdown
@@ -571,8 +562,10 @@
   :added "2021-09-22"
   :emacs>= 24.3
   :ensure t
-  :hook (prog-mode-hook . flycheck-mode)
-  :custom ((flycheck-display-errors-delay . 0.3))
+  :custom
+  ((flycheck-display-errors-delay . 1.0))
+  :hook
+  (prog-mode-hook . flycheck-mode)
   :config
   (leaf flycheck-inline
     :ensure t
@@ -582,55 +575,111 @@
     :hook (flycheck-mode-hook . flycheck-color-mode-line-mode))
 )
 
-(leaf python
-  ;; :custom
-  ;; (python-indent-guess-indent-offset-verbose . nil)
+;; (leaf highlight-indent-guides
+;;   ;; インデントの位置を強調表示
+;;   :doc "Minor mode to highlight indentation"
+;;   :req "emacs-24.1"
+;;   :tag "emacs>=24.1"
+;;   :url "https://github.com/DarthFennec/highlight-indent-guides"
+;;   :added "2021-12-14"
+;;   :emacs>= 24.1
+;;   :ensure t
+;;   :require t
+;;   :hook
+;;   (prog-mode-hook . highlight-indent-guides-mode)
+;;   :custom
+;;   ((highlight-indent-guides-method . 'bitmap)
+;;    (highlight-indent-guides-auto-enabled . t)
+;;    (highlight-indent-guides-responsive . t)
+;;    (highlight-indent-guides-character . ?\|))
+;; )
+
+(leaf csharp-mode
+  :doc "C# mode derived mode"
+  :req "emacs-26.1"
+  :tag "mode" "oop" "languages" "c#" "emacs>=26.1"
+  :url "https://github.com/emacs-csharp/csharp-mode"
+  :added "2021-12-27"
+  :emacs>= 26.1
+  :ensure t
   :config
+  ;; 文字コードをSJISにする
+  (modify-coding-system-alist 'file "\\.cs\\'" 'sjis-dos)
+  (defun my-cs-mode-hook ()
+    ""
+    (setq tab-witdh 4)
+    (setq indent-tabs-mode nil))
+
+  ;; char-mode is sjis
+  (add-hook 'csharp-mode-hook 'my-cs-mode-hook)
+  (autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
+  (setq auto-mode-alist (append '(("\\.cs$" . csharp-mode)) auto-mode-alist))
+)
+
+(leaf python
+  :config
+  (setq python-indent-guess-indent-offset-verbose nil)
+
   ;; (leaf python-mode
   ;;   :doc "Python major mode"
   ;;   :tag "oop" "python" "processes" "languages"
   ;;   :url "https://gitlab.com/groups/python-mode-devs"
-  ;;   :added "2021-09-22"
+  ;;   :added "2021-12-14"
   ;;   :ensure t
   ;;   :require t
   ;; )
-  ;(setq debug-on-error t) ;; for debug
-  (setenv "PYTHONIOENCODING" "utf-8")
-  (add-to-list 'process-coding-system-alist '("python" . (utf-8 . utf-8)))
-  (add-to-list 'process-coding-system-alist '("elpy"   . (utf-8 . utf-8)))
-  (add-to-list 'process-coding-system-alist '("flake8" . (utf-8 . utf-8)))
+
   (leaf elpy
     :doc "Emacs Python Development Environment"
     :req "company-0.9.2" "emacs-24.4" "highlight-indentation-0.5.0" "pyvenv-1.3" "yasnippet-0.8.0" "s-1.11.0"
     :tag "tools" "languages" "ide" "python" "emacs>=24.4"
     :url "https://github.com/jorgenschaefer/elpy"
-    :added "2021-09-15"
+    :added "2021-12-14"
     :emacs>= 24.4
     :ensure t
-    ;:after python-mode company highlight-indentation pyvenv yasnippet
+    :after company highlight-indentation pyvenv yasnippet
     :init
     (elpy-enable)
-    :custom
-    ((elpy-rpc-backend . "jedi")) ; or 'jedi'
-    :preface
-    (defun exec-python nil
-      "Use compile to run python programs"
-      (interactive)
-    (compile (concat "python " (buffer-file-name))))
     :hook
     ((python-mode . elpy-enable)
-     ;(elpy-mode-hook . flycheck-mode)
+     (elpy-mode-hook . flycheck-mode)
+     (elpy-mode-hook . (lambda ()
+                         (auto-complete-mode -1)
+                         ;(py-yapf-enable-on-save)
+                         (define-key elpy-mode-map "\C-c\C-c" 'exec-python)
+                         (highlight-indentation-mode -1)))
     )
+    :custom
+    ((elpy-rpc-backend . "jedi")) ; or 'jedi')
     :config
+    (elpy-enable)
     (remove-hook 'elpy-modules 'elpy-module-highlight-indentation) ;; インデントハイライトの無効化
     (remove-hook 'elpy-modules 'elpy-module-flymake) ;; flymakeの無効化
-    ;; (add-hook 'elpy-mode-hook (lambda ()
-    ;;                            ;(auto-complete-mode -1)
-    ;;                            ;(py-yapf-enable-on-save)
-    ;;                            ;(define-key elpy-mode-map "\C-c\C-c" 'exec-python)
-    ;;                            ;(highlight-indentation-mode -1))
-    ;;                             ))
   )
+
+  ;(setq debug-on-error t) ;; for debug
+  ;; (setenv "PYTHONIOENCODING" "utf-8")
+  ;; (add-to-list 'process-coding-system-alist '("python" . (utf-8 . utf-8)))
+  ;; (add-to-list 'process-coding-system-alist '("elpy"   . (utf-8 . utf-8)))
+  ;; (add-to-list 'process-coding-system-alist '("flake8" . (utf-8 . utf-8)))
+  ;; (leaf elpy
+  ;;   :preface
+  ;;   (defun exec-python nil
+  ;;     "Use compile to run python programs"
+  ;;     (interactive)
+  ;;   (compile (concat "python " (buffer-file-name))))
+  ;;   :hook
+  ;;   ((python-mode . elpy-enable)
+  ;;    ;(elpy-mode-hook . flycheck-mode)
+  ;;   )
+  ;;   :config
+  ;;   ;; (add-hook 'elpy-mode-hook (lambda ()
+  ;;   ;;                            ;(auto-complete-mode -1)
+  ;;   ;;                            ;(py-yapf-enable-on-save)
+  ;;   ;;                            ;(define-key elpy-mode-map "\C-c\C-c" 'exec-python)
+  ;;   ;;                            ;(highlight-indentation-mode -1))
+  ;;   ;;                             ))
+  ;; )
 
   (leaf pipenv
     :doc "A Pipenv porcelain"
@@ -713,17 +762,6 @@
   ;; )
 )
 
-(leaf fuzzy
-  :doc "Fuzzy Matching"
-  :req "emacs-24.3"
-  :tag "convenience" "emacs>=24.3"
-  :url "https://github.com/auto-complete/fuzzy-el"
-  :added "2021-09-22"
-  :emacs>= 24.3
-  :ensure t
-  :require t
-)
-
 ;; (leaf py-yapf
 ;;   :doc "Use yapf to beautify a Python buffer"
 ;;   :url "https://github.com/paetzke/py-yapf.el"
@@ -747,6 +785,7 @@
   (set-face-underline  'highlight t)
 )
 
+
 (leaf mozc
   ;; for flicker in bellow
   ;; -> xset -r 49
@@ -755,11 +794,127 @@
   :added "2021-09-15"
   :ensure t
   :require t
-  :custom
-  ((default-input-method . "japanese-mozc")
-  )
+  ;; disabled.
+  ;; :custom
+  ;; ((default-input-method . "japanese-mozc")
+  ;; )
+  ;; for GoogleIME
   :config
   (global-set-key (kbd "<zenkaku-hankaku>") 'toggle-input-method)
+
+  (leaf mozc-im
+    :doc "Mozc with input-method-function interface."
+    :req "mozc-0"
+    :tag "extentions" "i18n"
+    :added "2021-12-09"
+    :ensure t
+  :after mozc)
+
+  (leaf mozc-popup
+    :doc "Mozc with popup"
+    :req "popup-0.5.2" "mozc-0"
+    :tag "extentions" "i18n"
+    :added "2021-12-09"
+    :ensure t
+    :after mozc)
+
+  (require 'mozc-im)
+  (require 'mozc-popup)
+  (require 'mozc-cursor-color)
+  (require 'wdired)
+  (setq default-input-method "japanese-mozc-im")
+  ;; popupスタイル を使用する
+  (setq mozc-candidate-style 'popup)
+  ;; カーソルカラーを設定する
+  (setq mozc-cursor-color-alist '((direct        . "red")
+                                  (read-only     . "yellow")
+                                  (hiragana      . "green")
+                                  (full-katakana . "goldenrod")
+                                  (half-ascii    . "dark orchid")
+                                  (full-ascii    . "orchid")
+                                  (half-katakana . "dark goldenrod")))
+
+  ;; カーソルの点滅を OFF にする
+  (blink-cursor-mode 0)
+  (defun enable-input-method (&optional arg interactive)
+    (interactive "P\np")
+    (if (not current-input-method)
+        (toggle-input-method arg interactive)))
+
+  (defun disable-input-method (&optional arg interactive)
+    (interactive "P\np")
+    (if current-input-method
+        (toggle-input-method arg interactive)))
+
+  (defun isearch-enable-input-method ()
+    (interactive)
+    (if (not current-input-method)
+        (isearch-toggle-input-method)
+      (cl-letf (((symbol-function 'toggle-input-method)
+                 (symbol-function 'ignore)))
+        (isearch-toggle-input-method))))
+
+  (defun isearch-disable-input-method ()
+    (interactive)
+    (if current-input-method
+        (isearch-toggle-input-method)
+      (cl-letf (((symbol-function 'toggle-input-method)
+                 (symbol-function 'ignore)))
+        (isearch-toggle-input-method))))
+
+  ;; IME をトグルするキー設定
+  (global-set-key (kbd "C-o") 'toggle-input-method)
+  (define-key isearch-mode-map (kbd "C-o") 'isearch-toggle-input-method)
+  (define-key wdired-mode-map (kbd "C-o") 'toggle-input-method)
+
+  ;; IME を無効にするキー設定
+  ;; (global-set-key (kbd "C-<f1>") 'disable-input-method)
+  ;; (define-key isearch-mode-map (kbd "C-<f1>") 'isearch-disable-input-method)
+  ;; (define-key wdired-mode-map (kbd "C-<f1>") 'disable-input-method)
+
+  ;; (global-set-key (kbd "C-j") 'disable-input-method)
+  ;; (define-key isearch-mode-map (kbd "C-j") 'isearch-disable-input-method)
+  ;; (define-key wdired-mode-map (kbd "C-j") 'disable-input-method)
+
+  ;; IME を有効にするキー設定
+  ;; (global-set-key (kbd "C-<f2>") 'enable-input-method)
+  ;; (define-key isearch-mode-map (kbd "C-<f2>") 'isearch-enable-input-method)
+  ;; (define-key wdired-mode-map (kbd "C-<f2>") 'enable-input-method)
+
+  ;; (global-set-key (kbd "C-o") 'enable-input-method)
+  ;; (define-key isearch-mode-map (kbd "C-o") 'isearch-enable-input-method)
+  ;; (define-key wdired-mode-map (kbd "C-o") 'enable-input-method)
+
+  ;; mozc-cursor-color を利用するための対策
+  (defvar-local mozc-im-mode nil)
+  (add-hook 'mozc-im-activate-hook (lambda () (setq mozc-im-mode t)))
+  (add-hook 'mozc-im-deactivate-hook (lambda () (setq mozc-im-mode nil)))
+  (advice-add 'mozc-cursor-color-update
+              :around (lambda (orig-fun &rest args)
+                        (let ((mozc-mode mozc-im-mode))
+                          (apply orig-fun args))))
+
+  ;; isearch を利用する前後で IME の状態を維持するための対策
+  (add-hook 'isearch-mode-hook (lambda () (setq im-state mozc-im-mode)))
+  (add-hook 'isearch-mode-end-hook
+            (lambda ()
+              (unless (eq im-state mozc-im-mode)
+                (if im-state
+                    (activate-input-method default-input-method)
+                  (deactivate-input-method)))))
+
+  ;; wdired 終了時に IME を OFF にする
+  (advice-add 'wdired-finish-edit
+              :after (lambda (&rest args)
+                       (deactivate-input-method)))
+
+  (advice-add 'mozc-session-execute-command
+              :after (lambda (&rest args)
+                       (when (eq (nth 0 args) 'CreateSession)
+                         ;; (mozc-session-sendkey '(hiragana)))))
+                         (mozc-session-sendkey '(Hankaku/Zenkaku)))))
+
+  (setq mozc-helper-program-name "mozc_emacs_helper.sh")
 )
 
 (leaf rainbow-delimiters
@@ -834,39 +989,50 @@
                       :background my/bg-color)
 )
 
-(leaf modus-themes
-  :doc "Highly accessible themes (WCAG AAA)"
-  :req "emacs-27.1"
-  :tag "accessibility" "theme" "faces" "emacs>=27.1"
-  :url "https://gitlab.com/protesilaos/modus-themes"
-  :added "2021-09-14"
-  :emacs>= 27.1
+(leaf badger-theme
+  :doc "A dark theme for Emacs 24."
+  :url "https://github.com/ccann/badger-theme"
+  :added "2021-12-29"
   :ensure t
-  :require t
-  :custom
-  ((modus-themes-slanted-constructs . t)
-   (modus-themes-no-mixed-fonts . t)
-   (modus-themes-subtle-line-numbers . t)
-   (modus-themes-mode-line . '(moody borderless))
-   (modus-themes-syntax . 'faint)
-   (modus-themes-paren-match . 'intense-bold)
-   (modus-themes-region . 'bg-only)
-   (modus-themes-diffs . 'deuteranopia)
-   (modus-themes-org-blocks . 'gray-background)
-   ;; (modus-themes-variable-pitch-ui . t)
-   ;; (modus-themes-variable-pitch-headings . t)
-   (modus-themes-scale-headings . t)
-
-   ;; (modus-themes-scale-1 . 1.1)
-   ;; (modus-themes-scale-2 . 1.15)
-   ;; (modus-themes-scale-3 . 1.21)
-   ;; (modus-themes-scale-4 . 1.27)
-   ;; (modus-themes-scale-title . 1.33)
-  )
   :config
-  (modus-themes-load-themes)
-  (modus-themes-load-vivendi)
+  (load-theme 'badger t)
+  (setq org-fontify-done-headline t)
+  (set-face-attribute 'region nil                    :background "#F5D658")
 )
+
+;; (leaf modus-themes
+;;   :doc "Highly accessible themes (WCAG AAA)"
+;;   :req "emacs-27.1"
+;;   :tag "accessibility" "theme" "faces" "emacs>=27.1"
+;;   :url "https://gitlab.com/protesilaos/modus-themes"
+;;   :added "2021-09-14"
+;;   :emacs>= 27.1
+;;   :ensure t
+;;   :require t
+;;   :custom
+;;   ((modus-themes-slanted-constructs . t)
+;;    (modus-themes-no-mixed-fonts . t)
+;;    (modus-themes-subtle-line-numbers . t)
+;;    (modus-themes-mode-line . '(moody borderless))
+;;    (modus-themes-syntax . 'faint)
+;;    (modus-themes-paren-match . 'intense-bold)
+;;    (modus-themes-region . 'bg-only)
+;;    (modus-themes-diffs . 'deuteranopia)
+;;    (modus-themes-org-blocks . 'gray-background)
+;;    ;; (modus-themes-variable-pitch-ui . t)
+;;    ;; (modus-themes-variable-pitch-headings . t)
+;;    (modus-themes-scale-headings . t)
+
+;;    ;; (modus-themes-scale-1 . 1.1)
+;;    ;; (modus-themes-scale-2 . 1.15)
+;;    ;; (modus-themes-scale-3 . 1.21)
+;;    ;; (modus-themes-scale-4 . 1.27)
+;;    ;; (modus-themes-scale-title . 1.33)
+;;    )
+;;   :config
+;;   (modus-themes-load-themes)
+;;   (modus-themes-load-vivendi)
+;;   )
 
 ;; (leaf doom-modeline
 ;;   :doc "A minimal and modern mode-line"
@@ -895,7 +1061,7 @@
   :config
   (moody-replace-mode-line-buffer-identification)
   (moody-replace-vc-mode)
-)
+  )
 
 (leaf minions
   :doc "A minor-mode menu for the mode line"
@@ -910,65 +1076,190 @@
   (minions-mode)
   :custom
   ((minions-mode-line-lighter . "[+]"))
-)
+  )
 
 (leaf windows-path
   :doc "Can use winsows format path."
   :config
-   (require 'cl-lib)
-   (defun set-drvfs-alist ()
-     (interactive)
-     (setq drvfs-alist
-           (mapcar (lambda (x)
-                     (when (string-match "\\(.*\\)|\\(.*?\\)/?$" x)
-                       (cons (match-string 1 x) (match-string 2 x))))
-                   (split-string (concat
-                                  ;; //wsl$ or //wsl.localhost パス情報の追加
-                                  (when (or (not (string-match "Microsoft" (shell-command-to-string "uname -v")))
-                                            (>= (string-to-number (nth 1 (split-string operating-system-release "-"))) 18362))
-                                    (concat "/|" (shell-command-to-string "wslpath -m /")))
-                                  (shell-command-to-string
-                                   (concat
-                                    "mount | grep -E 'type (drvfs|cifs)' | sed -r 's/(.*) on (.*) type (drvfs|cifs) .*/\\2\\|\\1/' | sed 's!\\\\!/!g';"
-                                    "mount | grep 'aname=drvfs;' | sed -r 's/.* on (.*) type 9p .*;path=([^;]*);.*/\\1|\\2/' | sed 's!\\\\!/!g' | sed 's!|UNC/!|//!' | sed \"s!|UNC\\(.\\)!|//\\$(printf '%o' \\\\\\'\\1)!\" | sed 's/.*/echo \"&\"/' | sh")))
-                                 "\n" t))))
+  (require 'cl-lib)
+  (defun set-drvfs-alist ()
+    (interactive)
+    (setq drvfs-alist
+          (mapcar (lambda (x)
+                    (when (string-match "\\(.*\\)|\\(.*?\\)/?$" x)
+                      (cons (match-string 1 x) (match-string 2 x))))
+                  (split-string (concat
+                                 ;; //wsl$ or //wsl.localhost パス情報の追加
+                                 (when (or (not (string-match "Microsoft" (shell-command-to-string "uname -v")))
+                                           (>= (string-to-number (nth 1 (split-string operating-system-release "-"))) 18362))
+                                   (concat "/|" (shell-command-to-string "wslpath -m /")))
+                                 (shell-command-to-string
+                                  (concat
+                                   "mount | grep -E 'type (drvfs|cifs)' | sed -r 's/(.*) on (.*) type (drvfs|cifs) .*/\\2\\|\\1/' | sed 's!\\\\!/!g';"
+                                   "mount | grep 'aname=drvfs;' | sed -r 's/.* on (.*) type 9p .*;path=([^;]*);.*/\\1|\\2/' | sed 's!\\\\!/!g' | sed 's!|UNC/!|//!' | sed \"s!|UNC\\(.\\)!|//\\$(printf '%o' \\\\\\'\\1)!\" | sed 's/.*/echo \"&\"/' | sh")))
+                                "\n" t))))
 
-   (set-drvfs-alist)
+  (set-drvfs-alist)
 
-   (defconst windows-path-style-regexp "\\`\\(.*/\\)?\\([a-zA-Z]:\\\\.*\\|[a-zA-Z]:/.*\\|\\\\\\\\.*\\|//.*\\)")
+  (defconst windows-path-style-regexp "\\`\\(.*/\\)?\\([a-zA-Z]:\\\\.*\\|[a-zA-Z]:/.*\\|\\\\\\\\.*\\|//.*\\)")
 
-   (defun windows-path-convert-file-name (name)
-     (setq name (replace-regexp-in-string windows-path-style-regexp "\\2" name t nil))
-     (setq name (replace-regexp-in-string "\\\\" "/" name))
-     (let ((case-fold-search t))
-       (cl-loop for (mountpoint . source) in drvfs-alist
-                if (string-match (concat "^\\(" (regexp-quote source) "\\)\\($\\|/\\)") name)
-                return (replace-regexp-in-string "^//" "/" (replace-match mountpoint t t name 1))
-                finally return name)))
+  (defun windows-path-convert-file-name (name)
+    (setq name (replace-regexp-in-string windows-path-style-regexp "\\2" name t nil))
+    (setq name (replace-regexp-in-string "\\\\" "/" name))
+    (let ((case-fold-search t))
+      (cl-loop for (mountpoint . source) in drvfs-alist
+               if (string-match (concat "^\\(" (regexp-quote source) "\\)\\($\\|/\\)") name)
+               return (replace-regexp-in-string "^//" "/" (replace-match mountpoint t t name 1))
+               finally return name)))
 
-   (defun windows-path-run-real-handler (operation args)
-     "Run OPERATION with ARGS."
-     (let ((inhibit-file-name-handlers
-            (cons 'windows-path-map-drive-hook-function
-                  (and (eq inhibit-file-name-operation operation)
-                       inhibit-file-name-handlers)))
-           (inhibit-file-name-operation operation))
-       (apply operation args)))
+  (defun windows-path-run-real-handler (operation args)
+    "Run OPERATION with ARGS."
+    (let ((inhibit-file-name-handlers
+           (cons 'windows-path-map-drive-hook-function
+                 (and (eq inhibit-file-name-operation operation)
+                      inhibit-file-name-handlers)))
+          (inhibit-file-name-operation operation))
+      (apply operation args)))
 
-   (defun windows-path-map-drive-hook-function (operation name &rest args)
-     "Run OPERATION on cygwin NAME with ARGS."
-     (windows-path-run-real-handler
-      operation
-      (cons (windows-path-convert-file-name name)
-            (if (stringp (car args))
-                (cons (windows-path-convert-file-name (car args))
-                      (cdr args))
-              args))))
+  (defun windows-path-map-drive-hook-function (operation name &rest args)
+    "Run OPERATION on cygwin NAME with ARGS."
+    (windows-path-run-real-handler
+     operation
+     (cons (windows-path-convert-file-name name)
+           (if (stringp (car args))
+               (cons (windows-path-convert-file-name (car args))
+                     (cdr args))
+             args))))
 
-   (add-to-list 'file-name-handler-alist
-                (cons windows-path-style-regexp
-                      'windows-path-map-drive-hook-function))
+  (add-to-list 'file-name-handler-alist
+               (cons windows-path-style-regexp
+                     'windows-path-map-drive-hook-function))
+  )
+
+(leaf vscode-open
+  :doc "Open vscode from emacs"
+  :config
+  (defun vscode-cmd-escape (arg)
+    (replace-regexp-in-string "[&|<>^\"%]" "^\\&" arg))
+
+  (defun vscode-open-command (filename &optional keep-position)
+    (interactive)
+    (let* ((filename (expand-file-name filename))
+           (default-directory "/mnt/c/")
+           authority
+           target
+           command
+           filepath)
+      (cond ((file-remote-p filename)
+             (setq command "cmd.exe /c code")
+             (if (file-directory-p filename)
+                 (setq command (format "%s --folder-uri" command))
+               (setq command (format "%s --file-uri" command)))
+             (let* ((vec (tramp-dissect-file-name filename))
+                    (method (tramp-file-name-method vec))
+                    (host (tramp-file-name-host vec))
+                    (user (tramp-file-name-user vec))
+                    (localname (tramp-file-name-localname vec)))
+               (cond ((or (string= method "scp")
+                          (string= method "ssh"))
+                      (setq authority "ssh-remote")
+                      (setq target (if user
+                                       (format "%s@%s" user host)
+                                     host))
+                      (setq filepath (format "vscode-remote://%s+%s%s" authority target localname)))
+                     ((string= method "docker")
+                      (setq authority "attached-container")
+                      (setq dockerid (shell-command-to-string
+                                      (format "cmd.exe /c docker container ls --filter 'name=%s' --format '{{.ID}}'"
+                                              host)))
+                      (when (not (string= dockerid ""))
+                        (setq dockerid (substring dockerid 0 -1))
+                        (setq target (mapconcat (lambda (x)
+                                                  (format "%02x" (aref x 0)))
+                                                (split-string dockerid "" t) ""))
+                        (setq filepath (format "vscode-remote://%s+%s%s" authority target localname))
+                        (setq filepath (vscode-cmd-escape filepath))
+                        (setq filepath (vscode-cmd-escape filepath)))))))
+            (t
+             (cond (current-prefix-arg
+                    (setq command "cmd.exe /c code")
+                    (let ((winpath (shell-command-to-string
+                                    (format "wslpath2 -w %s 2> /dev/null"
+                                            (shell-quote-argument (file-truename filename))))))
+                      (when (not (string= winpath ""))
+                        (setq filepath (substring winpath 0 -1))
+                        (setq filepath (vscode-cmd-escape filepath))
+                        (setq filepath (vscode-cmd-escape filepath)))))
+                   (t
+                    (setq command "code")
+                    (setq filepath filename)))
+             (when keep-position
+               (setq command (format "%s -g" command))
+               (setq filepath (format "%s:%d:%d" filepath (line-number-at-pos) (+ (- (point)
+                                                                                     (save-excursion
+                                                                                       (beginning-of-line)
+                                                                                       (point)))
+                                                                                  1))))))
+      (if (null filepath)
+          (message "VSCodeで開くことができません")
+        (setq filepath (replace-regexp-in-string "/home/gnakagami/win_home" "/home/gnakagami" filepath))
+        (message (format "%s %s" command filepath))
+        (shell-command-to-string (format "%s %s" command (shell-quote-argument filepath))))))
+
+  ;; dired で開いているディレクトリを開く
+  (define-key dired-mode-map (kbd "V")
+    (lambda ()
+      (interactive)
+      (save-some-buffers)
+      (vscode-open-command (dired-current-directory) nil)))
+
+  ;; dired でカーソルがある位置のファイルを開く
+  (define-key dired-mode-map (kbd "C-c v")
+    (lambda ()
+      (interactive)
+      (save-some-buffers)
+      (vscode-open-command (dired-get-file-for-visit))))
+
+  ;; 開いているファイルをカーソルの位置を維持して開く
+  (global-set-key (kbd "C-c v")
+                  (lambda ()
+                    (interactive)
+                    (save-some-buffers)
+                    (vscode-open-command buffer-file-name t)))
 )
+
+(leaf sql
+  :doc "specialized comint.el for SQL interpreters"
+  :tag "builtin"
+  :added "2022-01-28"
+  ;; :require t
+  :config
+  (modify-coding-system-alist 'file "\\.sql\\'" 'sjis-dos)
+  (defun my-sql-mode-hook ()
+    ""
+    (setq indent-tabs-mode t)
+    (setq sql-indent-offset 4)
+    ;; (setq indent-tabs-mode nil)
+  )
+  (add-hook 'sql-mode-hook 'my-sql-mode-hook)
+
+  ;; (setq auto-mode-alist (cons '("\\.sql$" . sql-mode) auto-mode-alist))
+  ;; (add-hook 'sql-interactive-mode-hook
+  ;;           '(lambda ()
+  ;;              (set-buffer-process-coding-system 'sjis-unix 'sjis-unix)
+  ;;              (setq show-trailing-whitespace nil)))
+
+  ;; (leaf sql-indent
+  ;;   :doc "Support for indenting code in SQL files."
+  ;;   :req "cl-lib-0.5"
+  ;;   :tag "sql" "languages"
+  ;;   :url "https://github.com/alex-hhh/emacs-sql-indent"
+  ;;   :added "2022-01-28"
+  ;;   :ensure t
+  ;;   :require t
+  ;;   :config)
+)
+
 
 ;; My Settings ends
 ;; ----
