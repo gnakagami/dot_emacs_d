@@ -122,13 +122,8 @@
 )
 
 (leaf exec-path-from-shell
-  ;; 環境設定PATHをEmacsに引き継ぐ
-  :doc "Get environment variables such as $PATH from the shell"
+  :doc "環境設定PATHをEmacsに引き継ぐ"
   :req "emacs-24.1" "cl-lib-0.6"
-  :tag "environment" "unix" "emacs>=24.1"
-  :url "https://github.com/purcell/exec-path-from-shell"
-  :added "2021-09-15"
-  :emacs>= 24.1
   :ensure t
   :custom
   ((exec-path-from-shell-arguments . '("-l")))
@@ -137,10 +132,7 @@
 )
 
 (leaf windmove
-  ;; Alt+CursorでWindow移動
-  :doc "directional window-selection routines"
-  :tag "builtin"
-  :added "2021-09-15"
+  :doc "Alt+CursorでWindow移動"
   :custom
   ((windmove-wrap-around . t))
   :config
@@ -159,8 +151,6 @@
 
 (leaf uniquify
   :doc "unique buffer names dependent on file name"
-  :tag "builtin" "files"
-  :added "2021-09-15"
   :require t
   :custom
   ((uniquify-buffer-name-style . 'post-forward-angle-brackets)
@@ -169,13 +159,7 @@
 )
 
 (leaf elscreen
-  ;; 仮想Window
-  :doc "Emacs window session manager"
-  :req "emacs-24"
-  :tag "convenience" "window" "emacs>=24"
-  :url "https://github.com/knu/elscreen"
-  :added "2021-09-15"
-  :emacs>= 24
+  :doc "仮想Window"
   :ensure t
   :init
   (elscreen-start)
@@ -185,10 +169,6 @@
 
 (leaf wgrep
   :doc "Writable grep buffer and apply the changes to files"
-  :tag "extensions" "edit" "grep"
-  :url "http://github.com/mhayashi1120/Emacs-wgrep/raw/master/wgrep.el"
-  :added "2021-09-15"
-  :ensure t
   :init
   (require 'wgrep nil t)
   :custom
@@ -200,10 +180,6 @@
 (leaf magit
   :doc "A Git porcelain inside Emacs."
   :req "emacs-25.1" "dash-20210330" "git-commit-20210806" "magit-section-20210806" "transient-20210701" "with-editor-20210524"
-  :tag "vc" "tools" "git" "emacs>=25.1"
-  :url "https://github.com/magit/magit"
-  :added "2021-09-15"
-  :emacs>= 25.1
   :ensure t
   :require t
   :after git-commit magit-section with-editor
@@ -211,9 +187,6 @@
 
 (leaf open-junk-file
   :doc "Open a junk (memo) file to try-and-error"
-  :tag "tools" "convenience"
-  :url "http://www.emacswiki.org/cgi-bin/wiki/download/open-junk-file.el"
-  :added "2021-09-15"
   :ensure t
   :require t
   :config
@@ -225,10 +198,7 @@
 )
 
 (leaf tramp
-  ;; SSH接続
-  :doc "Transparent Remote Access, Multiple Protocol"
-  :tag "builtin"
-  :added "2021-09-15"
+  :doc "SSH接続"
   :require t
   :custom
   ((tramp-default-method . "ssh"))
@@ -260,26 +230,16 @@
   (leaf helm
     :doc "Helm is an Emacs incremental and narrowing framework"
     :req "emacs-25.1" "async-1.9.4" "popup-0.5.3" "helm-core-3.8.2"
-    :tag "emacs>=25.1"
-    :url "https://github.com/emacs-helm/helm"
-    :added "2022-01-26"
-    :emacs>= 25.1
     :ensure t
     :require t
     :after helm-core)
 
   (leaf helm-config
     :doc "Applications library for `helm.el'"
-    :added "2022-01-26"
     :require t)
 
   (leaf helm-gtags
     :doc "GNU GLOBAL helm interface"
-    :req "emacs-24.4" "helm-2.0"
-    :tag "emacs>=24.4"
-    :url "https://github.com/syohex/emacs-helm-gtags"
-    :added "2021-12-14"
-    :emacs>= 24.4
     :ensure t
     :after helm
     :require t
@@ -294,6 +254,7 @@
                  (local-set-key (kbd "C-t") 'helm-gtags-pop-stack)))
     (add-hook 'c-mode-hook      'helm-gtags-mode)
     (add-hook 'c++-mode-hook    'helm-gtags-mode)
+    (add-hook 'ruby-mode-hook   'helm-gtags-mode)
     (add-hook 'csharp-mode-hook 'helm-gtags-mode)
     (add-hook 'python-mode-hook 'helm-gtags-mode))
 
@@ -989,15 +950,28 @@
                       :background my/bg-color)
 )
 
-(leaf badger-theme
-  :doc "A dark theme for Emacs 24."
-  :url "https://github.com/ccann/badger-theme"
-  :added "2021-12-29"
+;; (leaf badger-theme
+;;   :doc "A dark theme for Emacs 24."
+;;   :url "https://github.com/ccann/badger-theme"
+;;   :added "2021-12-29"
+;;   :ensure t
+;;   :config
+;;   (load-theme 'badger t)
+;;   (setq org-fontify-done-headline t)
+;;   (set-face-attribute 'region nil                    :background "#F5D658")
+;; )
+
+(leaf afternoon-theme
+  :doc "Dark color theme with a deep blue background"
+  :req "emacs-24.1"
+  :tag "themes" "emacs>=24.1"
+  :url "http://github.com/osener/emacs-afternoon-theme"
+  :added "2022-02-15"
+  :emacs>= 24.1
   :ensure t
+  :require t
   :config
-  (load-theme 'badger t)
-  (setq org-fontify-done-headline t)
-  (set-face-attribute 'region nil                    :background "#F5D658")
+  (load-theme 'afternoon t)
 )
 
 ;; (leaf modus-themes
@@ -1048,20 +1022,20 @@
 ;;   (doom-modeline-mode 1)
 ;; )
 
-(leaf moody
-  :doc "Tabs and ribbons for the mode line"
-  :req "emacs-25.3"
-  :tag "emacs>=25.3"
-  :url "https://github.com/tarsius/moody"
-  :added "2021-09-16"
-  :emacs>= 25.3
-  :ensure t
-  :custom
-  ((x-underline-at-descent-line . t))
-  :config
-  (moody-replace-mode-line-buffer-identification)
-  (moody-replace-vc-mode)
-  )
+;; (leaf moody
+;;   :doc "Tabs and ribbons for the mode line"
+;;   :req "emacs-25.3"
+;;   :tag "emacs>=25.3"
+;;   :url "https://github.com/tarsius/moody"
+;;   :added "2021-09-16"
+;;   :emacs>= 25.3
+;;   :ensure t
+;;   :custom
+;;   ((x-underline-at-descent-line . t))
+;;   :config
+;;   (moody-replace-mode-line-buffer-identification)
+;;   (moody-replace-vc-mode)
+;;   )
 
 (leaf minions
   :doc "A minor-mode menu for the mode line"

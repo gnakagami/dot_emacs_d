@@ -1,0 +1,98 @@
+# -*- mode: Shell-script -*-
+
+# wsl utils
+export PATH="/home/gnakagami/.local/wsl-utils:$PATH"
+
+# Emacs Mozc Helper
+export PATH="/home/gnakagami/.local/mozc_helper:$PATH"
+
+# pyenv
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init --path)"
+
+# pipenv
+# 各PJ/.venv./を作成する場合、有効にする
+# PJがOneDriveにあるため無効にしておく
+#export PIPENV_VENV_IN_PROJECT=1
+
+# rbenv
+export RBENV_ROOT="$HOME/.rbenv"
+export PATH="$RBENV_ROOT/bin:$PATH"
+eval "$(rbenv init -)"
+
+# GNU global(GTAGS)
+export PATH="$HOME/.local/global/bin:$PATH"
+export GTAGSCONF="$HOME/.local/global/etc/gtags.conf"
+export GTAGSLABEL=pygments
+
+# ----
+# Xserver
+# ----
+# GWSL
+if which tasklist.exe > /dev/null && ! tasklist.exe | grep -q '^GWSL_vcxsrv'; then
+(
+    cd '/mnt/c/Program Files/WindowsApps/28644OpticosStudios.GWSL_1.4.3.0_x64__r3mwbcqrwk84r/GWSL'
+    cmd.exe /c GWSL.exe > /dev/null 2>&1 &
+
+    c=10
+    while which tasklist.exe > /dev/null  &&  ! tasklist.exe | grep -q '^GWSL_vcxsrv'
+    do
+        echo -n "."
+        c=`expr $c + 1`
+        if [ $c -lt 0 ]; then
+            break
+        fi
+        sleep 1
+    done
+    echo "GWSL was started."
+
+    if uname -v | grep -v -q 'Microsoft'; then
+        export DISPLAY=$(ip route | awk '/^default/ {print $3; exit}'):0.0
+        xhost + $(ip -4 a show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    else
+        export DISPLAY=127.0.0.1:0.0
+    fi
+
+    # access control を enabled にする
+    xhost -
+)
+fi
+
+if [ "$INSIDE_EMACS" ]; then
+    TERM=eterm-color
+fi
+
+umask 022
+
+if [ -z "$DISPLAY" ]; then
+    if uname -v | grep -q 'Microsoft'; then
+        export DISPLAY=:0
+    else
+        if ss -lt4 | grep -q '127.0.0.1:6020'; then
+            export DISPLAY=:20
+        else
+            # export DISPLAY=$(awk '/^nameserver/ {print $2; exit}' /etc/resolv.conf):0.0
+            export DISPLAY=$(ip route | awk '/^default/ {print $3; exit}'):0.0
+        fi
+    fi
+fi
+
+# export NO_AT_BRIDGE=1
+export LIBGL_ALWAYS_INDIRECT=1
+# export GIGACAGE_ENABLED=no
+
+# 全角/半角キーの連打症状の回避(キーリピート無効)
+xset -r 49
+
+# X Window のキーリピートの速度を変更
+xset r rate 400 40
+
+# Jupyter Lab
+JL_DIR=${HOME}/win_home/src/jupyter
+if ! ps aux | grep -v "grep" | grep -q "run_jupyter"; then
+    echo -n "..."
+    nohup $JL_DIR/run_jupyter.sh > $JL_DIR/jupyter.log 2>&1 &
+    echo $! > $JL_DIR/jupyter.pid
+    echo "JupyterLab was started."
+fi
