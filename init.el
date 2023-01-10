@@ -295,7 +295,7 @@
    (company-idle-delay            . 0) ;; 補完の遅延なし
    (company-minimum-prefix-length . 1) ;; 1文字から補完開始
    (company-transformers          . '(company-sort-by-occurrence))
-   (global-company-mode           . t)
+   ;(global-company-mode           . t)
    (company-selection-wrap-around . t)
    (company-require-match         . 'never))
   ;; :config
@@ -325,14 +325,14 @@
         (kill-buffer my-dired-before-buffer)))
   ;; Customize Date/Time format
   ;;   -L : シンボリックリンクをディレクトリとして表示
-  (setq dired-listing-switches
-        "-alh --group-directories-first --time-style \"+%y-%m-%d %H:%M:%S\"")
+  ;; (setq dired-listing-switches
+  ;;       "-alh --group-directories-first --time-style \"+%y-%m-%d %H:%M:%S\"")
   ;; 表示項目を指定
-  (require 'dired-details-s)
-  (setq dired-details-s-types
-        '((size-time  . (user group size time))
-          (all        . (perms links user group size time))
-          (no-details . ())))
+  ;; (require 'dired-details-s)
+  ;; (setq dired-details-s-types
+  ;;       '((size-time  . (user group size time))
+  ;;         (all        . (perms links user group size time))
+  ;;         (no-details . ())))
 )
 
 ;; --------------------
@@ -410,6 +410,9 @@
    (setq org-startup-with-inline-images t)      ;; 画像をインラインで表示
    (setq org-directory "~/win_home/docs/Notes") ;; org-directory内のファイルすべてからagendaを作成する
    (setq org-agenda-files '("~/win_home/docs/Notes"))
+   (setq org-agenda-start-day "-1d")
+   ;(setq org-agenda-span 5)
+   (setq org-agenda-start-on-weekday nil)
    ;; TODO
    (setq org-todo-keywords  '((sequence "TODO(t)"
                                         "WORK(w)"
@@ -420,15 +423,27 @@
    ;; DONEの時刻を記録
    (setq org-log-done 'time)
    (setq org-capture-templates
-         '(("l" "Log / 作業ログ"
-            entry (file+datetree "~/win_home/notes/logs.org")
+         '(("i" "Info"
+            entry (file+datetree "~/win_home/docs/Notes/logs.org")
             "* %?\n  Entered on %U"
             :unnarrowed 1)
            ("t" "Task"
-            entry (file+datetree "~/win_home/notes/logs.org")
+            entry (file+datetree "~/win_home/docs/Notes/todo.org")
             "** TODO %?\n   SCHEDULED: %^t")
+           ("S" "Scheduler"
+            entry (file+datetree "~/win_home/docs/Notes/logs_scheduler.org")
+            "* %?\n  Entered on %U"
+            :unnarrowed 1)
+           ("Q" "QDS"
+            entry (file+datetree "~/win_home/docs/Notes/logs_qds.org")
+            "* %?\n  Entered on %U"
+            :unnarrowed 1)
+           ("O" "OEE"
+            entry (file+datetree "~/win_home/docs/Notes/logs_oee.org")
+            "* %?\n  Entered on %U"
+            :unnarrowed 1)
            ("v" "View"
-            plain (file+datetree "~/win_home/notes/logs.org")
+            plain (file+datetree "~/win_home/docs/Notes/logs.org")
             nil
             :jump-to-captured 1
             :unnarrowed 1)
@@ -461,13 +476,18 @@
      (org-mode-hook . (lambda () (org-superstar-mode 1)))
      :config
      ;;(set-face-attribute 'org-superstar-header-bullet nil :inherit 'fixed-pitched :height 180)
-     (setq org-superstar-headline-bullets-list '("⌾" "■" "⚬" "▷"))
+     (setq org-superstar-headline-bullets-list '("○" "◼" "⚫" "▸" "･"))
      ;; (setq org-superstar-item-bullet-alist
      ;;       '((?* . ?•)
      ;;         (?* . ?➤)
-     ;;         (?- . ?•)))
+     ;;         (?- . ?➖)))
      (setq org-superstar-todo-bullet-alist
-           '(("TODO" . ?☐) ("WORK" . ?✰) ("CANCELED" . ?✘) ("WAIT" . ?☕) ("DONE" . ?✔)))
+           ;; '(("TODO" . ?☐) ("WORK" . ?✰) ("CANCELED" . ?✘) ("WAIT" . ?☕) ("DONE" . ?✔)))
+           '(("TODO" . ?☐)
+             ("WORK" . ?✍)
+             ("CANCELED" . ?✘)
+             ("WAIT" . ?☕)
+             ("DONE" . ?✔)))
      (setq org-superstar-special-todo-items t)
    )
 )
@@ -671,56 +691,32 @@
     (add-to-list 'python-shell-completion-native-disabled-interpreters "pipenv")
   )
 
-  ;; (leaf ein
-  ;;   :doc "Emacs IPython Notebook"
-  ;;   :req "emacs-25" "websocket-1.12" "anaphora-1.0.4" "request-0.3.3" "deferred-0.5" "polymode-0.2.2" "dash-2.13.0" "with-editor-0.-1"
-  ;;   :tag "reproducible research" "literate programming" "jupyter" "emacs>=25"
-  ;;   :url "https://github.com/dickmao/emacs-ipython-notebook"
-  ;;   :added "2021-11-11"
-  ;;   :emacs>= 25
-  ;;   :ensure t
-  ;;   :after websocket anaphora deferred polymode with-editor
-  ;;   :require t
-  ;;   :config
-  ;;   (leaf ein-notebook :require t)
-  ;;   (leaf ein-notebooklist :require t)
-  ;;   (leaf ein-markdown-mode :require t)
-  ;;   (leaf smartrep :require t)
+  (leaf ein
+    :doc "Emacs IPython Notebook"
+    :req "emacs-25" "websocket-1.12" "anaphora-1.0.4" "request-0.3.3" "deferred-0.5" "polymode-0.2.2" "dash-2.13.0" "with-editor-0.-1"
+    :tag "reproducible research" "literate programming" "jupyter" "emacs>=25"
+    :url "https://github.com/dickmao/emacs-ipython-notebook"
+    :added "2022-03-17"
+    :emacs>= 25
+    :ensure t
+    :after websocket anaphora deferred polymode with-editor
+    :require t
+    :config
+    (require 'ein-notebook)
+    (require 'ein-notebooklist)
+    (require 'ein-subpackages)
+    (require 'ein-markdown-mode)
 
-  ;;   ;; (add-hook 'ein:notebook-mode-hook 'electric-pair-mode) ;; お好みで
-  ;;   ;; (add-hook 'ein:notebook-mode-hook 'undo-tree-mode) ;; お好みで
+    (setq ein:worksheet-enable-undo t)
+    (setq ein:output-area-inlined-images t)
 
-  ;;   ;; undoを有効化 (customizeから設定しておいたほうが良さげ)
-  ;;   (setq ein:worksheet-enable-undo t)
-
-  ;;   ;; 画像をインライン表示 (customizeから設定しておいたほうが良さげ)
-  ;;   (setq ein:output-area-inlined-images t)
-
-  ;;   ;; markdownパーサー
-  ;;   ;; M-x ein:markdown →HTMLに翻訳した結果を*markdown-output*バッファに出力
-  ;;   (require 'ein-markdown-mode)
-
-  ;;   ;; pandocと markdownコマンドは入れておく
-  ;;   ;; brew install pandoc
-  ;;   ;; brew install markdown
-  ;;   (setq ein:markdown-command "pandoc --metadata pagetitle=\"markdown preview\" -f markdown -c ~/.pandoc/github-markdown.css -s --self-contained --mathjax=https://raw.githubusercontent.com/ustasb/dotfiles/b54b8f502eb94d6146c2a02bfc62ebda72b91035/pandoc/mathjax.js")
-
-  ;;   ;; markdownをhtmlに出力してブラウザでプレビュー
-  ;;   (defun ein:markdown-preview ()
-  ;;     (interactive)
-  ;;     (ein:markdown-standalone)
-  ;;     (browse-url-of-buffer ein:markdown-output-buffer-name))
-
-  ;;   ;; smartrepを入れておく。
-  ;;   ;; C-c C-n C-n C-n ... で下のセルに連続で移動、
-  ;;   ;; その途中でC-p C-p C-pで上のセルに連続で移動など
-  ;;   ;; セル間の移動がスムーズになってとても便利
-  ;;   (declare-function smartrep-define-key "smartrep")
-  ;;   (with-eval-after-load "ein-notebook"
-  ;;     (smartrep-define-key ein:notebook-mode-map "C-c"
-  ;;                          '(("C-n" . 'ein:worksheet-goto-next-input-km)
-  ;;                            ("C-p" . 'ein:worksheet-goto-prev-input-km))))
-  ;; )
+    (require 'smartrep)
+    (declare-function smartrep-define-key "smartrep")
+    (with-eval-after-load "ein-notebook"
+      (smartrep-define-key ein:notebook-mode-map "C-c"
+                           '(("C-n" . 'ein:worksheet-goto-next-input-km)
+                             ("C-p" . 'ein:worksheet-goto-prev-input-km))))
+  )
 )
 
 ;; (leaf py-yapf
@@ -733,10 +729,20 @@
 ;;   (add-hook 'python-mode-hook 'py-yapf-enable-on-save)
 ;; )
 
+(leaf ruby-set
+  :config
+  (defun my-ruby-mode-hook ()
+    ""
+    (setq ruby-insert-encoding-magic-comment nil) ; not insert coding: utf-8
+  )
+  (add-hook 'ruby-mode-hook 'my-ruby-mode-hook)
+)
+
 (leaf gui-settings
   :if window-system
   :config
   (modify-frame-parameters nil '((sticky . t) (width . 100) (height . 40)))
+  ;(set-face-attribute 'default nil :family "RobotoJ Mono" :height 140) ; font
   (set-face-attribute 'default nil :family "RobotoJ Mono" :height 120) ; font
 
   ;; hl-line-mode
@@ -961,17 +967,28 @@
 ;;   (set-face-attribute 'region nil                    :background "#F5D658")
 ;; )
 
-(leaf afternoon-theme
-  :doc "Dark color theme with a deep blue background"
-  :req "emacs-24.1"
-  :tag "themes" "emacs>=24.1"
-  :url "http://github.com/osener/emacs-afternoon-theme"
-  :added "2022-02-15"
-  :emacs>= 24.1
+;; (leaf afternoon-theme
+;;   :doc "Dark color theme with a deep blue background"
+;;   :req "emacs-24.1"
+;;   :tag "themes" "emacs>=24.1"
+;;   :url "http://github.com/osener/emacs-afternoon-theme"
+;;   :added "2022-02-15"
+;;   :emacs>= 24.1
+;;   :ensure t
+;;   :require t
+;;   :config
+;;   (load-theme 'afternoon t)
+;; )
+
+(leaf color-theme-sanityinc-tomorrow
+  :doc "A version of Chris Kempson's \"tomorrow\" themes"
+  :tag "themes" "faces"
+  :url "https://github.com/purcell/color-theme-sanityinc-tomorrow"
+  :added "2022-02-16"
   :ensure t
-  :require t
+  :require
   :config
-  (load-theme 'afternoon t)
+  (load-theme 'sanityinc-tomorrow-night t)
 )
 
 ;; (leaf modus-themes
@@ -1211,27 +1228,51 @@
   (modify-coding-system-alist 'file "\\.sql\\'" 'sjis-dos)
   (defun my-sql-mode-hook ()
     ""
-    (setq indent-tabs-mode t)
+    (setq indent-tabs-mode nil) ; t or nil
     (setq sql-indent-offset 4)
-    ;; (setq indent-tabs-mode nil)
   )
   (add-hook 'sql-mode-hook 'my-sql-mode-hook)
 
-  ;; (setq auto-mode-alist (cons '("\\.sql$" . sql-mode) auto-mode-alist))
-  ;; (add-hook 'sql-interactive-mode-hook
-  ;;           '(lambda ()
-  ;;              (set-buffer-process-coding-system 'sjis-unix 'sjis-unix)
-  ;;              (setq show-trailing-whitespace nil)))
+  (setq auto-mode-alist (cons '("\\.sql$" . sql-mode) auto-mode-alist))
+  (add-hook 'sql-interactive-mode-hook
+            '(lambda ()
+               (set-buffer-process-coding-system 'sjis-unix 'sjis-unix)
+               (setq show-trailing-whitespace nil)))
 
-  ;; (leaf sql-indent
-  ;;   :doc "Support for indenting code in SQL files."
-  ;;   :req "cl-lib-0.5"
-  ;;   :tag "sql" "languages"
-  ;;   :url "https://github.com/alex-hhh/emacs-sql-indent"
-  ;;   :added "2022-01-28"
-  ;;   :ensure t
-  ;;   :require t
-  ;;   :config)
+  (leaf sql-indent
+    :doc "Support for indenting code in SQL files."
+    :req "cl-lib-0.5"
+    :tag "sql" "languages"
+    :url "https://github.com/alex-hhh/emacs-sql-indent"
+    :added "2022-01-28"
+    :ensure t
+    :require t
+  )
+)
+
+(leaf powershell
+  :doc "Mode for editing PowerShell scripts"
+  :req "emacs-24"
+  :tag "languages" "powershell" "emacs>=24"
+  :url "http://github.com/jschaf/powershell.el"
+  :added "2022-06-21"
+  :emacs>= 24
+  :ensure t
+  :require t
+  :config
+  ;; 文字コードをSJISにする
+  (modify-coding-system-alist 'file "\\.ps1\\'" 'sjis-dos)
+)
+
+(leaf dockerfile-mode
+  :doc "Major mode for editing Docker's Dockerfiles"
+  :req "emacs-24"
+  :tag "docker" "emacs>=24"
+  :url "https://github.com/spotify/dockerfile-mode"
+  :added "2022-04-19"
+  :emacs>= 24
+  :ensure t
+  :require t
 )
 
 
