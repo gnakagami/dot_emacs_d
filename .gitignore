@@ -13,3 +13,4 @@ custom.el
 mysnippets/
 yasnippets/
 .org-id-locations
+async-bytecomp.log

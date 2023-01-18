@@ -473,6 +473,7 @@
      :ensure t
      :after org
      :require t
+     :when (eq system-type 'gnu/linux)
      :hook
      (org-mode-hook . (lambda () (org-superstar-mode 1)))
      :config
