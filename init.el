@@ -48,7 +48,6 @@
     (leaf hydra :ensure t)
     (leaf el-get :ensure t)
     (leaf blackout :ensure t)
-
     :config
     ;; initialize leaf-keywords.el
     (leaf-keywords-init)))
@@ -125,6 +124,7 @@
   :doc "環境設定PATHをEmacsに引き継ぐ"
   :req "emacs-24.1" "cl-lib-0.6"
   :ensure t
+  :when (eq system-type 'gnu/linux)
   :custom
   ((exec-path-from-shell-arguments . '("-l")))
   :config
@@ -226,6 +226,7 @@
 )
 
 (leaf helm-settings
+  :when (eq system-type 'gnu/linux)
   :config
   (leaf helm
     :doc "Helm is an Emacs incremental and narrowing framework"
@@ -401,7 +402,7 @@
   (yas-global-mode 1)
 )
 
-(leaf org
+(leaf org-settings
   :doc "Export Framework for Org Mode"
   :tag "builtin"
   :added "2021-09-15"
@@ -492,7 +493,7 @@
    )
 )
 
-(leaf markdown
+(leaf markdown-settings
   :config
   (leaf markdown-mode
     :doc "Major mode for Markdown-formatted text"
@@ -598,6 +599,7 @@
 )
 
 (leaf python
+  :when (eq system-type 'gnu/linux)
   :config
   (setq python-indent-guess-indent-offset-verbose nil)
 
@@ -729,7 +731,8 @@
 ;;   (add-hook 'python-mode-hook 'py-yapf-enable-on-save)
 ;; )
 
-(leaf ruby-set
+(leaf ruby-settings
+  :when (eq system-type 'gnu/linux)
   :config
   (defun my-ruby-mode-hook ()
     ""
@@ -752,14 +755,14 @@
   (set-face-underline  'highlight t)
 )
 
-
-(leaf mozc
+(leaf mozc-settings
   ;; for flicker in bellow
   ;; -> xset -r 49
   :doc "minor mode to input Japanese with Mozc"
   :tag "input method" "multilingual" "mule"
   :added "2021-09-15"
   :ensure t
+  :when (eq system-type 'gnu/linux)
   :require t
   ;; disabled.
   ;; :custom
@@ -956,74 +959,89 @@
                       :background my/bg-color)
 )
 
-;; (leaf badger-theme
-;;   :doc "A dark theme for Emacs 24."
-;;   :url "https://github.com/ccann/badger-theme"
-;;   :added "2021-12-29"
-;;   :ensure t
-;;   :config
-;;   (load-theme 'badger t)
-;;   (setq org-fontify-done-headline t)
-;;   (set-face-attribute 'region nil                    :background "#F5D658")
-;; )
-
-;; (leaf afternoon-theme
-;;   :doc "Dark color theme with a deep blue background"
-;;   :req "emacs-24.1"
-;;   :tag "themes" "emacs>=24.1"
-;;   :url "http://github.com/osener/emacs-afternoon-theme"
-;;   :added "2022-02-15"
-;;   :emacs>= 24.1
-;;   :ensure t
-;;   :require t
-;;   :config
-;;   (load-theme 'afternoon t)
-;; )
-
-(leaf color-theme-sanityinc-tomorrow
-  :doc "A version of Chris Kempson's \"tomorrow\" themes"
-  :tag "themes" "faces"
-  :url "https://github.com/purcell/color-theme-sanityinc-tomorrow"
-  :added "2022-02-16"
-  :ensure t
-  :require
+(leaf color-theme
   :config
-  (load-theme 'sanityinc-tomorrow-night t)
+  ;; (leaf badger-theme
+  ;;   :doc "A dark theme for Emacs 24."
+  ;;   :url "https://github.com/ccann/badger-theme"
+  ;;   :added "2021-12-29"
+  ;;   :ensure t
+  ;;   :config
+  ;;   (load-theme 'badger t)
+  ;;   (setq org-fontify-done-headline t)
+  ;;   (set-face-attribute 'region nil                    :background "#F5D658")
+  ;; )
+
+  ;; (leaf afternoon-theme
+  ;;   :doc "Dark color theme with a deep blue background"
+  ;;   :req "emacs-24.1"
+  ;;   :tag "themes" "emacs>=24.1"
+  ;;   :url "http://github.com/osener/emacs-afternoon-theme"
+  ;;   :added "2022-02-15"
+  ;;   :emacs>= 24.1
+  ;;   :ensure t
+  ;;   :require t
+  ;;   :config
+  ;;   (load-theme 'afternoon t)
+  ;; )
+
+  ;; (leaf color-theme-sanityinc-tomorrow
+  ;;   :doc "A version of Chris Kempson's \"tomorrow\" themes"
+  ;;   :tag "themes" "faces"
+  ;;   :url "https://github.com/purcell/color-theme-sanityinc-tomorrow"
+  ;;   :added "2022-02-16"
+  ;;   :ensure t
+  ;;   :require
+  ;;   :config
+  ;;   (load-theme 'sanityinc-tomorrow-night t)
+  ;; )
+
+  ;; (leaf modus-themes
+  ;;   :doc "Highly accessible themes (WCAG AAA)"
+  ;;   :req "emacs-27.1"
+  ;;   :tag "accessibility" "theme" "faces" "emacs>=27.1"
+  ;;   :url "https://gitlab.com/protesilaos/modus-themes"
+  ;;   :added "2021-09-14"
+  ;;   :emacs>= 27.1
+  ;;   :ensure t
+  ;;   :require t
+  ;;   :custom
+  ;;   ((modus-themes-slanted-constructs . t)
+  ;;    (modus-themes-no-mixed-fonts . t)
+  ;;    (modus-themes-subtle-line-numbers . t)
+  ;;    (modus-themes-mode-line . '(moody borderless))
+  ;;    (modus-themes-syntax . 'faint)
+  ;;    (modus-themes-paren-match . 'intense-bold)
+  ;;    (modus-themes-region . 'bg-only)
+  ;;    (modus-themes-diffs . 'deuteranopia)
+  ;;    (modus-themes-org-blocks . 'gray-background)
+  ;;    ;; (modus-themes-variable-pitch-ui . t)
+  ;;    ;; (modus-themes-variable-pitch-headings . t)
+  ;;    (modus-themes-scale-headings . t)
+
+  ;;    ;; (modus-themes-scale-1 . 1.1)
+  ;;    ;; (modus-themes-scale-2 . 1.15)
+  ;;    ;; (modus-themes-scale-3 . 1.21)
+  ;;    ;; (modus-themes-scale-4 . 1.27)
+  ;;    ;; (modus-themes-scale-title . 1.33)
+  ;;    )
+  ;;   :config
+  ;;   (modus-themes-load-themes)
+  ;;   (modus-themes-load-vivendi)
+  ;;   )
+
+  (leaf dracula-theme
+    :doc "Dracula Theme"
+    :req "emacs-24.3"
+    :tag "emacs>=24.3"
+    :url "https://github.com/dracula/emacs"
+    :added "2023-01-12"
+    :emacs>= 24.3
+    :ensure t
+    :require t
+    :config
+    (load-theme 'dracula t))
 )
-
-;; (leaf modus-themes
-;;   :doc "Highly accessible themes (WCAG AAA)"
-;;   :req "emacs-27.1"
-;;   :tag "accessibility" "theme" "faces" "emacs>=27.1"
-;;   :url "https://gitlab.com/protesilaos/modus-themes"
-;;   :added "2021-09-14"
-;;   :emacs>= 27.1
-;;   :ensure t
-;;   :require t
-;;   :custom
-;;   ((modus-themes-slanted-constructs . t)
-;;    (modus-themes-no-mixed-fonts . t)
-;;    (modus-themes-subtle-line-numbers . t)
-;;    (modus-themes-mode-line . '(moody borderless))
-;;    (modus-themes-syntax . 'faint)
-;;    (modus-themes-paren-match . 'intense-bold)
-;;    (modus-themes-region . 'bg-only)
-;;    (modus-themes-diffs . 'deuteranopia)
-;;    (modus-themes-org-blocks . 'gray-background)
-;;    ;; (modus-themes-variable-pitch-ui . t)
-;;    ;; (modus-themes-variable-pitch-headings . t)
-;;    (modus-themes-scale-headings . t)
-
-;;    ;; (modus-themes-scale-1 . 1.1)
-;;    ;; (modus-themes-scale-2 . 1.15)
-;;    ;; (modus-themes-scale-3 . 1.21)
-;;    ;; (modus-themes-scale-4 . 1.27)
-;;    ;; (modus-themes-scale-title . 1.33)
-;;    )
-;;   :config
-;;   (modus-themes-load-themes)
-;;   (modus-themes-load-vivendi)
-;;   )
 
 ;; (leaf doom-modeline
 ;;   :doc "A minimal and modern mode-line"
@@ -1066,11 +1084,11 @@
   :init
   (minions-mode)
   :custom
-  ((minions-mode-line-lighter . "[+]"))
-  )
+  ((minions-mode-line-lighter . "[+]")))
 
 (leaf windows-path
   :doc "Can use winsows format path."
+  :when (eq system-type 'gnu/linux)
   :config
   (require 'cl-lib)
   (defun set-drvfs-alist ()
@@ -1129,6 +1147,7 @@
 
 (leaf vscode-open
   :doc "Open vscode from emacs"
+  :when (eq system-type 'gnu/linux)
   :config
   (defun vscode-cmd-escape (arg)
     (replace-regexp-in-string "[&|<>^\"%]" "^\\&" arg))
@@ -1273,6 +1292,7 @@
   :emacs>= 24
   :ensure t
   :require t
+  :when (eq system-type 'gnu/linux)
 )
 
 
